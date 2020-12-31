@@ -1,8 +1,7 @@
 # TestAzureStorageBlobsV12
 
- Test Azure Storage Blobs v12 + .net Core.
- 
- 
+ Azure Storage Blobs v12 SDK easy sample  + .Net Core.
+  
  
  ![alt SampleResult](https://github.com/donma/TestAzureStorageBlobsV12/blob/master/dsnap_20201231173720.jpg?raw=true)
  
