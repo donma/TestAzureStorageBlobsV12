@@ -2,6 +2,12 @@
 
  Test Azure Storage Blobs v12 + .net Core.
  
+ 
+ 
+ ![alt SampleResult](https://github.com/donma/TestAzureStorageBlobsV12/blob/master/dsnap_20201231173720.jpg?raw=true)
+ 
+ 
+ 
 1>Add Dir And Upload File. [[Azure] C# + Azure.Storage.Blobs v12 - 建立 Container, 上傳檔案 , 列出資料 , 列出資料夾 , 刪除檔案 , 刪除檔案夾](https://blog.no2don.com/2020/12/azure-c-azurestorageblobs-2020-container.html)
 
 2>Delete File.[[Azure] C# + Azure.Storage.Blobs v12 - 建立 Container, 上傳檔案 , 列出資料 , 列出資料夾 , 刪除檔案 , 刪除檔案夾](https://blog.no2don.com/2020/12/azure-c-azurestorageblobs-2020-container.html)
