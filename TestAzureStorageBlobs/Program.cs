@@ -11,15 +11,14 @@ namespace TestAzureStorageBlobs
 {
     class Program
     {
-    
-        static string connsctionString = "";
-        static void Main(string[] args)
+ static string connsctionString = "";
+        static async Task Main(string[] args)
         {
 
             while (true)
             {
                 Console.WriteLine("\r\n\r\n--------------------------------------------");
-                Console.WriteLine("\r\nDONMA AZURE STORAGE BLOB TEST v12 - 2020 \r\n\r\n--------------------------------------------");
+                Console.WriteLine("\r\nDONMA AZURE STORAGE BLOB TEST 2020\r\n\r\n--------------------------------------------");
                 Console.WriteLine("1>Add Dir And Upload File.");
                 Console.WriteLine("2>Delete File.");
                 Console.WriteLine("3>List Files.");
@@ -35,6 +34,8 @@ namespace TestAzureStorageBlobs
                 Console.WriteLine("13>Add 1W JSON Files.");
                 Console.WriteLine("14>Add 1W JSON Files And Add Tags");
                 Console.WriteLine("15>Search By Tag");
+                Console.WriteLine("16>Add 10W JSON Files");
+                Console.WriteLine("17>Get Counts");
                 Console.WriteLine("--------------------------------------------\r\n");
 
                 Console.Write(">");
@@ -106,7 +107,119 @@ namespace TestAzureStorageBlobs
                 {
                     SearchByTag();
                 }
+                if (ans == "16")
+                {
+                    Add10WDatas();
+                }
+                if (ans == "17")
+                {
+
+                    GetDataCount();
+                }
             }
+        }
+
+        private static async Task ListBlobsFlatListing()
+
+        {
+            var blobClient = new Azure.Storage.Blobs.BlobContainerClient(connsctionString, "test1");
+
+            try
+            {
+
+                var resultSegment = blobClient.GetBlobsAsync(default, default, "data10w/")
+                    .AsPages(default, 5000);
+                var count1 = 0;
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
+                // Enumerate the blobs returned for each page.
+                await foreach (Azure.Page<BlobItem> blobPage in resultSegment)
+                {
+
+                    count1 += blobPage.Values.Count;
+                }
+                Console.WriteLine(count1 + "--");
+                Console.WriteLine(stopWatch.Elapsed);
+
+            }
+            catch (Azure.RequestFailedException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.ReadLine();
+                throw;
+            }
+        }
+
+
+        static void Add10WDatas()
+        {
+
+            var usersJson = new List<string>();
+            var usersObject = new List<User>();
+            for (var i = 1; i <= 100000; i++)
+            {
+
+                var u = new User();
+                u.Age = i;
+                u.Create = new DateTime(2000, 1, 1).AddDays(i);
+                u.Id = "USER" + i;
+                u.Name = "USERNAME" + i;
+
+                usersJson.Add(JsonConvert.SerializeObject(u));
+                usersObject.Add(u);
+            }
+
+
+
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            Parallel.For(1, 100001,
+                 index =>
+                 {
+
+                     var blobClient = new Azure.Storage.Blobs.BlobClient(connsctionString, "test1", "data10w/data" + index + ".json");
+                     //byte[] byteArray = Encoding.ASCII.GetBytes(contents);
+                     MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(usersJson[index - 1]));
+
+                     blobClient.Upload(stream, true);
+
+                 });
+            Console.WriteLine(stopWatch.Elapsed);
+
+
+        }
+
+        static void GetDataCount()
+        {
+            var blobClient = new Azure.Storage.Blobs.BlobContainerClient(connsctionString, "test1");
+
+            var count1 = 0;
+            Stopwatch stopWatch1 = new Stopwatch();
+            stopWatch1.Start();
+            //     foreach (var blobItem in blobClient.GetBlobs(Azure.Storage.Blobs.Models.BlobTraits.None, Azure.Storage.Blobs.Models.BlobStates.None, "data10w/").AsPages(default, 5000))
+            foreach (var blobItem in blobClient.GetBlobs(Azure.Storage.Blobs.Models.BlobTraits.Tags, Azure.Storage.Blobs.Models.BlobStates.None, "data10w/").AsPages(default, 5000))
+            {
+                count1 += blobItem.Values.Count;
+
+            }
+            Console.WriteLine(stopWatch1.Elapsed);
+            Console.WriteLine(count1 + "!!");
+
+            GC.Collect();
+            var count2 = 0;
+            Stopwatch stopWatch2 = new Stopwatch();
+            stopWatch2.Start();
+
+            foreach (var blobItem in blobClient.GetBlobs(Azure.Storage.Blobs.Models.BlobTraits.CopyStatus, Azure.Storage.Blobs.Models.BlobStates.None, "data10w/"))
+            {
+                count2++;
+
+            }
+            Console.WriteLine(stopWatch2.Elapsed);
+            Console.WriteLine(count2 + "!!");
+
+
+
         }
 
         static void SearchByTag()
@@ -114,7 +227,6 @@ namespace TestAzureStorageBlobs
 
             var blobContainerClient = new Azure.Storage.Blobs.BlobContainerClient(connsctionString, "test1");
             var serviceClient = new Azure.Storage.Blobs.BlobServiceClient(connsctionString);
-
 
             /// var queryString = @"""NAME"" = 'USERNAME9999'";
             //  var queryString = @"""AGE"" >= '1995' AND ""AGE"" <= '2000'";
@@ -139,7 +251,7 @@ namespace TestAzureStorageBlobs
 
                 var u = new User();
                 u.Age = i;
-                u.Create = new DateTime(2000, 1, 1).AddDays(i-1);
+                u.Create = new DateTime(2000, 1, 1).AddDays(i - 1);
                 u.Id = "USER" + i;
                 u.Name = "USERNAME" + i;
 
